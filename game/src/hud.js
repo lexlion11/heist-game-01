@@ -174,8 +174,13 @@ function drawThreatReadout(ctx, state) {
 
 function drawPhaseHint(ctx, state) {
   let hint = '';
-  if (state.phase === 'infiltrate') hint = 'E at the vault to work the lock';
-  else if (state.phase === 'escape') hint = 'The van is lit — run south-west';
+  if (state.phase === 'infiltrate') {
+    const near = state.cameras.find((c) => c.online && Math.hypot(c.x - state.thief.x, c.y - state.thief.y) < 70);
+    if (near) hint = `E  —  CUT ${near.name}`;
+    else hint = 'E at the vault to work the lock';
+  } else if (state.phase === 'escape') {
+    hint = 'The van is lit — run south-west';
+  }
   if (!hint) return;
   ctx.save();
   ctx.textAlign = 'center';

@@ -5,6 +5,7 @@ export const SEEN_FILL = 26;     // per second while seen
 export const HEAR_FILL = 8;      // per second while only heard
 export const COOLDOWN_DRAIN = 11; // per second while unseen
 export const DETECTION_LIMIT = 100;
+export const CATCH_GRACE = 0.9;   // seconds the alarm must stay full before a loss
 
 /** True when anybody is currently looking at the thief. */
 export function anyoneSeesThief(state) {
@@ -30,14 +31,18 @@ export function updateAlarm(state, dt) {
     alarm.lastSeenX = state.thief.x;
     alarm.lastSeenY = state.thief.y;
     alarm.seen = 1;
+    // A fair caught moment: the alarm has to stay full for a moment, so a
+    // single frame of exposure is not a loss, but standing in the light is.
+    alarm.catchTimer = Math.min(CATCH_GRACE, alarm.catchTimer + dt);
   } else {
     alarm.seen = Math.max(0, alarm.seen - dt * 3);
     if (heard) alarm.level = Math.min(ALARM_MAX, alarm.level + HEAR_FILL * dt);
     else alarm.level = Math.max(0, alarm.level - COOLDOWN_DRAIN * dt);
+    if (alarm.catchTimer > 0) alarm.catchTimer = Math.max(0, alarm.catchTimer - dt * 2);
   }
 
   if (alarm.level > alarm.peak) alarm.peak = alarm.level;
-  if (alarm.level >= DETECTION_LIMIT) {
+  if (alarm.level >= DETECTION_LIMIT && alarm.catchTimer >= CATCH_GRACE) {
     alarm.lockdown = true;
     return true;
   }
@@ -57,4 +62,26 @@ export function alarmLabel(state) {
   if (level < 70) return 'ALERTED';
   if (level < 95) return 'HUNTED';
   return 'LOCKDOWN';
+}
+
+/**
+ * The score of a finished run: the haul, minus what the noise cost, plus a
+ * bonus for a clean and quick getaway. It is the number the player chases.
+ */
+export function scoreRun(state, won) {
+  if (!won) return 0;
+  const haul = state.loot.value;
+  const noise = Math.round(state.alarm.peak * 4);
+  const speed = Math.max(0, Math.round((120 - state.runTime) * 20));
+  const clean = state.alarm.peak < 30 ? 2500 : 0;
+  return Math.max(0, haul + speed + clean - noise);
+}
+
+/** The letter grade of a finished run. */
+export function gradeRun(score) {
+  if (score >= 12000) return 'S';
+  if (score >= 9000) return 'A';
+  if (score >= 6500) return 'B';
+  if (score >= 4000) return 'C';
+  return 'D';
 }

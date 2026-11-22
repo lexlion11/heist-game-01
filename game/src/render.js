@@ -2,7 +2,7 @@
 // its loot. The heads-up display lives in hud.js; this file draws the floor.
 import { ROOMS, WALLS, COVER, DOORS, VAULT, EXIT_ZONE, WORLD } from './level.js';
 import { drawVisionCone, drawGuard, drawCamera, drawCameraCones, drawCoverBlock, drawVaultDoor, drawLootCrystals, drawThief, drawEffects, drawSmoke, drawCoin } from './sprites.js';
-import { alarmUrgency } from './alarm.js';
+import { alarmUrgency, scoreRun, gradeRun } from './alarm.js';
 
 export const PALETTE = {
   void: '#050a10',
@@ -205,23 +205,33 @@ export function drawTitle(ctx, state) {
 
 /** The end card, shared by the win and the loss. */
 export function drawEnd(ctx, state, won) {
+  const score = scoreRun(state, won);
   ctx.save();
-  ctx.fillStyle = won ? 'rgba(4, 12, 10, 0.88)' : 'rgba(14, 4, 8, 0.88)';
+  ctx.fillStyle = won ? 'rgba(4, 12, 10, 0.9)' : 'rgba(14, 4, 8, 0.9)';
   ctx.fillRect(0, 0, WORLD.width, WORLD.height);
   ctx.textAlign = 'center';
   ctx.font = '700 66px "Trebuchet MS", system-ui, sans-serif';
   ctx.fillStyle = won ? '#8ce06a' : '#ff4d6d';
-  ctx.fillText(won ? 'CLEAN GETAWAY' : 'CAUGHT IN THE SIGNAL', WORLD.width / 2, 300);
+  ctx.fillText(won ? 'CLEAN GETAWAY' : 'CAUGHT IN THE SIGNAL', WORLD.width / 2, 270);
 
   ctx.font = '400 20px "Trebuchet MS", system-ui, sans-serif';
   ctx.fillStyle = '#ffd166';
-  ctx.fillText(`HAUL  $${state.loot.value.toLocaleString('en-US')}`, WORLD.width / 2, 360);
+  ctx.fillText(`HAUL  $${state.loot.value.toLocaleString('en-US')}`, WORLD.width / 2, 330);
   ctx.fillStyle = 'rgba(207, 230, 242, 0.75)';
   ctx.font = '400 16px "Trebuchet MS", system-ui, sans-serif';
-  ctx.fillText(`time ${state.runTime.toFixed(1)}s   ·   alarm peak ${Math.round(state.alarm.peak)}%   ·   packets ${state.loot.packets}`, WORLD.width / 2, 392);
+  ctx.fillText(`time ${state.runTime.toFixed(1)}s   ·   alarm peak ${Math.round(state.alarm.peak)}%   ·   packets ${state.loot.packets}`, WORLD.width / 2, 362);
+
+  if (won) {
+    ctx.font = '700 44px "Trebuchet MS", system-ui, sans-serif';
+    ctx.fillStyle = '#2fd3c4';
+    ctx.fillText(`SCORE ${score.toLocaleString('en-US')}   GRADE ${gradeRun(score)}`, WORLD.width / 2, 424);
+    ctx.font = '400 14px "Trebuchet MS", system-ui, sans-serif';
+    ctx.fillStyle = 'rgba(207, 230, 242, 0.6)';
+    ctx.fillText(`best ${Math.max(state.best, score).toLocaleString('en-US')}`, WORLD.width / 2, 450);
+  }
 
   ctx.font = '700 20px "Trebuchet MS", system-ui, sans-serif';
   ctx.fillStyle = '#cfe6f2';
-  ctx.fillText('PRESS R TO RUN IT AGAIN', WORLD.width / 2, 470);
+  ctx.fillText('PRESS R TO RUN IT AGAIN', WORLD.width / 2, 510);
   ctx.restore();
 }

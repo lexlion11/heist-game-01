@@ -5,9 +5,9 @@ import { createInput } from './input.js';
 import { updateThief, thiefNoise, placeThiefAtSpawn } from './thief.js';
 import { makeGuards, updateGuard, guardSeesThief, guardHearsThief, divertGuard } from './guards.js';
 import { makeCameras, updateCamera, cameraSeesThief } from './cameras.js';
-import { updateAlarm } from './alarm.js';
+import { updateAlarm, scoreRun } from './alarm.js';
 import { resetVault, thiefAtVault, workVault, thiefAtExit, vaultEmpty } from './vault.js';
-import { deploySmoke, spendPick, throwCoin, nextTool } from './tools.js';
+import { deploySmoke, spendPick, throwCoin, nextTool, cutCamera, nearestCamera } from './tools.js';
 import { prepareCanvas, renderWorld, drawTitle, drawEnd } from './render.js';
 import { drawHud } from './hud.js';
 import { initAudio, playPickTick, playLootTaken, playSpotted, playSmoke, playCoin, playWin, playLose, playBlip } from './audio.js';
@@ -62,6 +62,8 @@ function step(dt) {
       playLose();
     } else if (checkWin()) {
       state.screen = SCREEN.WIN;
+      const score = scoreRun(state, true);
+      if (score > state.best) state.best = score;
       playWin();
     }
   }
@@ -135,6 +137,16 @@ function updateVaultWork(dt) {
   } else {
     picking = false;
     if (!atVault) state.vault.pickReady = false;
+  }
+
+  // E next to a live camera cuts it off the network.
+  if (input.consume('e')) {
+    const camera = nearestCamera(state);
+    if (camera) {
+      cutCamera(state, camera);
+      playSmoke();
+      setMessage(state, `${camera.name} IS DARK`, 1.8);
+    }
   }
 }
 
@@ -244,3 +256,6 @@ function frame(now) {
 requestAnimationFrame(frame);
 
 if (shotName) startShot();
+
+// A small handle on the run, so the game can be inspected from the console.
+window.coldSignal = { state, startRun, startShot };

@@ -20,7 +20,7 @@ export function createState() {
     paused: false,
     thief: { x: 210, y: 690, r: 13, angle: -Math.PI / 2, sneaking: false, moving: false, speed: 0, carrying: 0, hidden: false, step: 0 },
     vault: { x: 0, y: 0, progress: 0, cracked: 0, packets: 0, opening: false },
-    alarm: { level: 0, seen: 0, lastSeenX: 0, lastSeenY: 0, lockdown: false, peak: 0 },
+    alarm: { level: 0, seen: 0, lastSeenX: 0, lastSeenY: 0, lockdown: false, peak: 0, catchTimer: 0 },
     loot: { value: 0, packetValue: 1400, packets: 0 },
     exit: { reached: false, countdown: 0, zone: EXIT_ZONE },
     tools: { smoke: 3, pick: 2, coin: 3, selected: 'smoke', smokeBursts: [], coinThrows: [], cooldown: 0 },
