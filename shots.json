@@ -1,0 +1,6 @@
+[
+  { "name": "1-cover.png", "query": "cover" },
+  { "name": "2-route.png", "query": "route" },
+  { "name": "3-tool.png", "query": "tool" },
+  { "name": "4-escape.png", "query": "escape" }
+]
